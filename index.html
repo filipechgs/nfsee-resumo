@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NFS-e Resumo — Some notas fiscais e exporte CSV/PDF (gratuito)</title>
+  <meta name="description" content="NFS-e Resumo é um projeto gratuito e de código aberto que soma o valor das NFS-e emitidas no portal nacional, filtra por mês/ano e exporta a lista em CSV ou PDF. Roda no seu navegador, sem enviar dados para fora." />
+  <meta name="keywords" content="NFS-e, nota fiscal de serviço, NFS-e Emitidas, somar NFS-e, exportar CSV NFS-e, portal nacional NFS-e, Emissor Nacional, SERPRO, planilha notas fiscais, código aberto" />
+  <meta name="author" content="filipechgs" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <meta name="language" content="pt-BR" />
+  <meta name="theme-color" content="#0d6b4a" />
+  <link rel="canonical" href="https://github.com/filipechgs/nfse-e_resumo" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" sizes="any" />
+  <link rel="apple-touch-icon" href="./favicon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="pt_BR" />
+  <meta property="og:site_name" content="NFS-e Resumo" />
+  <meta property="og:title" content="NFS-e Resumo — Some notas e exporte CSV/PDF" />
+  <meta property="og:description" content="Ferramenta gratuita e open source para somar e exportar NFS-e emitidas no portal nacional. Fácil de usar no navegador." />
+  <meta property="og:url" content="https://github.com/filipechgs/nfse-e_resumo" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="NFS-e Resumo — Some notas e exporte CSV/PDF" />
+  <meta name="twitter:description" content="Projeto gratuito e de código aberto para somar e exportar NFS-e emitidas no portal nacional." />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "NFS-e Resumo",
+    "applicationCategory": "BrowserApplication",
+    "operatingSystem": "Web",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "BRL"
+    },
+    "description": "Ferramenta gratuita e de código aberto que soma o valor das NFS-e emitidas no portal nacional e exporta a listagem em CSV ou PDF.",
+    "url": "https://github.com/filipechgs/nfse-e_resumo",
+    "codeRepository": "https://github.com/filipechgs/nfse-e_resumo",
+    "license": "https://opensource.org/licenses/MIT",
+    "inLanguage": "pt-BR",
+    "author": {
+      "@type": "Person",
+      "name": "filipechgs",
+      "url": "https://github.com/filipechgs"
+    },
+    "keywords": "NFS-e, nota fiscal de serviço, exportar CSV, somatório, portal nacional"
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #f3f6f4;
+      --ink: #1a2420;
+      --muted: #4a5c54;
+      --card: #fff;
+      --line: #c9d6cf;
+      --accent: #0d6b4a;
+      --soft: #e6f3ec;
+      --warn-bg: #fff7ea;
+      --warn: #6e4a00;
+      --code-bg: #132019;
+      --code-ink: #d9ebe2;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #eaf3ee 0%, var(--bg) 35%);
+      line-height: 1.55;
+    }
+    .wrap {
+      width: min(820px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 3.5rem;
+    }
+    header {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand {
+      margin: 0 0 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    h1 {
+      margin: 0 0 0.6rem;
+      font-size: clamp(1.7rem, 4vw, 2.2rem);
+      line-height: 1.15;
+    }
+    .lead {
+      margin: 0;
+      font-size: 1.08rem;
+      color: var(--muted);
+      max-width: 40rem;
+    }
+    h2 {
+      margin: 2rem 0 0.7rem;
+      font-size: 1.25rem;
+    }
+    h3 {
+      margin: 1.2rem 0 0.45rem;
+      font-size: 1.05rem;
+    }
+    p, li { color: var(--ink); }
+    ol, ul { padding-left: 1.2rem; }
+    li { margin: 0.4rem 0; }
+    a { color: var(--accent); }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 1rem 1.15rem;
+      margin: 0.9rem 0;
+    }
+    .soft { background: var(--soft); border-color: #b7d8c6; }
+    .warn { background: var(--warn-bg); border-color: #e6c98a; }
+    .warn, .warn p { color: var(--warn); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.7rem 0; }
+    button.copy {
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #fff;
+      border-radius: 6px;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
+    button.copy:hover { filter: brightness(1.06); }
+    pre.code {
+      margin: 0;
+      padding: 1rem;
+      overflow: auto;
+      max-height: 22rem;
+      background: var(--code-bg);
+      color: var(--code-ink);
+      border-radius: 8px;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 0.75rem;
+      line-height: 1.45;
+      white-space: pre;
+    }
+    textarea.bookmarklet {
+      width: 100%;
+      min-height: 6.5rem;
+      font-family: "IBM Plex Mono", Consolas, monospace;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #f8fbf9;
+      resize: vertical;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.35rem;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    footer {
+      margin-top: 2.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    code.inline {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.88em;
+      background: #e4eee8;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="brand">NFS-e Resumo</p>
+      <h1>Some suas notas e baixe a lista com facilidade</h1>
+      <p class="lead">
+        Este recurso ajuda na tela de <strong>NFS-e Emitidas</strong> do portal nacional:
+        mostra o total em reais e permite salvar a listagem em planilha (CSV) ou PDF.
+      </p>
+      <div class="card soft" style="margin-top:1rem">
+        <p style="margin:0">
+          O <strong>NFS-e Resumo</strong> é um projeto <strong>gratuito</strong> e de
+          <strong>código aberto</strong>. Qualquer pessoa pode usar, copiar e melhorar.
+          Código e atualizações no GitHub:
+          <a href="https://github.com/filipechgs/nfse-e_resumo" rel="noopener">github.com/filipechgs/nfse-e_resumo</a>
+        </p>
+      </div>
+      <div class="card warn" style="margin-top:1rem">
+        <p style="margin:0">
+          <strong>Importante:</strong> isto não é um site oficial do governo.
+          Seus dados ficam no seu computador; o recurso não envia notas para outros lugares.
+        </p>
+        <p style="margin:0.75rem 0 0">
+          O uso deste script é de <strong>total responsabilidade do usuário</strong>.
+          Não utilize se não se sentir confortável ou confiante em colar/executar código no navegador.
+        </p>
+      </div>
+    </header>
+
+    <section>
+      <h2>Para que serve</h2>
+      <div class="card soft">
+        <p style="margin:0">
+          O portal mostra as notas, mas <strong>não mostra a soma</strong> e
+          <strong>não tem um botão simples para baixar tudo</strong>.
+          Também só deixa buscar 30 dias por vez.
+          O NFS-e Resumo faz o total, facilita o filtro por mês e ajuda a juntar o ano inteiro.
+        </p>
+      </div>
+      <ul>
+        <li>Ver <strong>quantas notas</strong> há e o <strong>valor total</strong></li>
+        <li>Escolher <strong>mês</strong> e <strong>ano</strong> e pesquisar</li>
+        <li>Baixar a lista em <strong>CSV</strong> (abre no Excel / planilhas)</li>
+        <li>Buscar o <strong>ano inteiro</strong> e salvar em CSV ou PDF</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Antes de começar</h2>
+      <ol>
+        <li>Abra o <a href="https://www.nfse.gov.br/emissornacional/" target="_blank" rel="noopener">Portal NFS-e</a> e faça login.</li>
+        <li>Entre no menu <strong>NFS-e Emitidas</strong>.</li>
+        <li>Deixe essa página aberta. Só depois ative o NFS-e Resumo (opções abaixo).</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Opção A — Colar no Console (sem instalar nada)</h2>
+      <p>Serve para testar agora, sem extensão. Em cada nova visita à página, será preciso colar de novo.</p>
+      <ol>
+        <li>Na página <strong>NFS-e Emitidas</strong>, pressione <strong>F12</strong>.</li>
+        <li>Abra a aba <strong>Console</strong>.</li>
+        <li>Clique em <strong>Copiar script</strong>, cole no Console e pressione <strong>Enter</strong>.</li>
+      </ol>
+      <div class="toolbar">
+        <button type="button" class="copy" data-copy="script-source">Copiar script</button>
+      </div>
+      <pre class="code" id="script-source">/**
+ * NFS-e Resumo
+ *
+ * Soma os valores das notas emitidas, filtra por mês/ano e exporta CSV/PDF.
+ * Use na página NFS-e Emitidas do Portal Nacional (cole no Console ou
+ * ative pelo favorito / Tampermonkey).
+ */
+(function () {
+  &quot;use strict&quot;;
+
+  var PREFIX = &quot;nfse-ext&quot;;
+  var STYLE_ID = PREFIX + &quot;-styles&quot;;
+  var BTN_ID = PREFIX + &quot;-btn-export&quot;;
+  var BTN_ANO_ID = PREFIX + &quot;-btn-ano&quot;;
+  var TOTAL_ID = PREFIX + &quot;-total&quot;;
+  var FILTRO_ID = PREFIX + &quot;-filtro-mes&quot;;
+  var MODAL_ID = PREFIX + &quot;-modal-ano&quot;;
+  var CHECK_CLASS = PREFIX + &quot;-check&quot;;
+  var COL_CLASS = PREFIX + &quot;-col-check&quot;;
+
+  var MESES = [
+    &quot;Janeiro&quot;,
+    &quot;Fevereiro&quot;,
+    &quot;Março&quot;,
+    &quot;Abril&quot;,
+    &quot;Maio&quot;,
+    &quot;Junho&quot;,
+    &quot;Julho&quot;,
+    &quot;Agosto&quot;,
+    &quot;Setembro&quot;,
+    &quot;Outubro&quot;,
+    &quot;Novembro&quot;,
+    &quot;Dezembro&quot;,
+  ];
+
+  var cacheAno = { ano: null, notas: null };
+
+  function cleanup() {
+    var style = document.getElementById(STYLE_ID);
+    if (style) style.remove();
+
+    [BTN_ID, BTN_ANO_ID].forEach(function (id) {
+      var btn = document.getElementById(id);
+      if (!btn) return;
+      var li = btn.closest(&quot;li&quot;);
+      if (li) li.remove();
+      else btn.remove();
+    });
+
+    var total = document.getElementById(TOTAL_ID);
+    if (total) total.remove();
+
+    var filtro = document.getElementById(FILTRO_ID);
+    if (filtro) filtro.remove();
+
+    var modal = document.getElementById(MODAL_ID);
+    if (modal) modal.remove();
+
+    document.querySelectorAll(&quot;.&quot; + COL_CLASS).forEach(function (el) {
+      el.remove();
+    });
+  }
+
+  function injectStyles() {
+    var css = [
+      &quot;#&quot; + BTN_ID + &quot;,#&quot; + BTN_ANO_ID + &quot;{display:inline-flex;align-items:center;gap:8px;margin-left:8px;}&quot;,
+      &quot;.&quot; + COL_CLASS + &quot;{width:36px;text-align:center;vertical-align:middle;}&quot;,
+      &quot;.&quot; + COL_CLASS + &quot; input[type=checkbox]{width:16px;height:16px;cursor:pointer;margin:0;}&quot;,
+      &quot;#&quot; + TOTAL_ID + &quot;{margin:12px 0 16px;padding:12px 16px;background:#e8f4fc;border:1px solid #b8d4e8;border-radius:4px;font-size:15px;line-height:1.5;color:#1a3a52;}&quot;,
+      &quot;#&quot; + TOTAL_ID + &quot; strong{font-size:17px;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot;{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:12px 0 8px;padding:12px 16px;background:#f7fafc;border:1px solid #d0dce6;border-radius:4px;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot; .nfse-ext-filtro-group{display:flex;flex-direction:column;gap:4px;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot; label{font-size:12px;font-weight:600;color:#334;margin:0;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot; select{min-width:140px;height:38px;padding:4px 8px;font-size:14px;border:1px solid #ccc;border-radius:4px;background:#fff;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot; .nfse-ext-btn-pesquisar{height:38px;padding:0 16px;font-size:14px;font-weight:600;border:none;border-radius:4px;background:#1a6fb5;color:#fff;cursor:pointer;}&quot;,
+      &quot;#&quot; + FILTRO_ID + &quot; .nfse-ext-btn-pesquisar:hover{background:#155a94;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot;{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,sans-serif;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-dialog{position:relative;background:#fff;color:#222;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.25);width:min(480px,calc(100vw - 32px));padding:24px;z-index:1;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; h3{margin:0 0 12px;font-size:20px;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-status{margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;min-height:3em;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; button{border:none;border-radius:4px;padding:10px 16px;font-size:14px;cursor:pointer;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; button:disabled{opacity:.55;cursor:not-allowed;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-btn-primary{background:#1a6fb5;color:#fff;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-btn-secondary{background:#e8e8e8;color:#333;}&quot;,
+      &quot;#&quot; + MODAL_ID + &quot; .nfse-ext-close{position:absolute;top:10px;right:12px;background:transparent;border:none;font-size:22px;line-height:1;color:#666;cursor:pointer;padding:4px 8px;}&quot;,
+    ].join(&quot;&quot;);
+
+    var style = document.createElement(&quot;style&quot;);
+    style.id = STYLE_ID;
+    style.textContent = css;
+    document.head.appendChild(style);
+  }
+
+  function parseValorBR(texto) {
+    if (!texto) return 0;
+    var limpo = String(texto).trim().replace(/\./g, &quot;&quot;).replace(&quot;,&quot;, &quot;.&quot;);
+    var n = parseFloat(limpo);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function formatValorBR(n) {
+    return n.toLocaleString(&quot;pt-BR&quot;, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+
+  function textOf(el) {
+    return el ? el.textContent.replace(/\s+/g, &quot; &quot;).trim() : &quot;&quot;;
+  }
+
+  function getTabela() {
+    return document.querySelector(&quot;table.table.table-striped&quot;);
+  }
+
+  function getLinhasNotas(tabela) {
+    if (!tabela) return [];
+    return Array.prototype.slice.call(
+      tabela.querySelectorAll(&quot;tbody tr[data-valor]&quot;)
+    );
+  }
+
+  function extrairDocumentoNome(td) {
+    if (!td) return { documento: &quot;&quot;, nome: &quot;&quot;, completo: &quot;&quot; };
+    var docEl = td.querySelector(&quot;.cpf, .cnpj&quot;);
+    var documento = docEl ? textOf(docEl) : &quot;&quot;;
+    var completo = textOf(td);
+    var nome = completo;
+    if (documento) {
+      nome = completo
+        .replace(documento, &quot;&quot;)
+        .replace(/^[\s\-–—]+/, &quot;&quot;)
+        .trim();
+    }
+    return { documento: documento, nome: nome, completo: completo };
+  }
+
+  function extrairNumeroNfse(tr) {
+    var link = tr.querySelector(&#x27;a[href*=&quot;/Notas/Visualizar/&quot;]&#x27;);
+    if (!link) return &quot;&quot;;
+    var parts = link.getAttribute(&quot;href&quot;).split(&quot;/&quot;);
+    return parts[parts.length - 1] || &quot;&quot;;
+  }
+
+  function extrairSituacao(tr) {
+    var img = tr.querySelector(&quot;.td-situacao img&quot;);
+    if (!img) return &quot;&quot;;
+    return (
+      img.getAttribute(&quot;alt&quot;) ||
+      img.getAttribute(&quot;data-original-title&quot;) ||
+      img.getAttribute(&quot;title&quot;) ||
+      &quot;&quot;
+    );
+  }
+
+  function coletarNotas(tabela) {
+    return getLinhasNotas(tabela).map(function (tr) {
+      var tomador = extrairDocumentoNome(tr.querySelector(&quot;.td-texto-grande&quot;));
+      return {
+        data: textOf(tr.querySelector(&quot;.td-data&quot;)),
+        documento: tomador.documento,
+        nome: tomador.nome,
+        emitidaPara: tomador.completo,
+        competencia: textOf(tr.querySelector(&quot;.td-competencia&quot;)),
+        municipio: textOf(tr.querySelector(&quot;.td-center&quot;)),
+        valorTexto:
+          tr.getAttribute(&quot;data-valor&quot;) || textOf(tr.querySelector(&quot;.td-valor&quot;)),
+        valor: parseValorBR(tr.getAttribute(&quot;data-valor&quot;)),
+        situacao: extrairSituacao(tr),
+        numero: extrairNumeroNfse(tr),
+      };
+    });
+  }
+
+  function somarNotas(notas) {
+    return notas.reduce(function (acc, n) {
+      return acc + n.valor;
+    }, 0);
+  }
+
+  function chaveNota(n) {
+    return n.numero || [n.data, n.documento, n.valorTexto, n.nome].join(&quot;|&quot;);
+  }
+
+  function deduplicarNotas(lista) {
+    var vistos = Object.create(null);
+    var out = [];
+    lista.forEach(function (n) {
+      var k = chaveNota(n);
+      if (vistos[k]) return;
+      vistos[k] = true;
+      out.push(n);
+    });
+    return out;
+  }
+
+  function ordenarNotas(lista) {
+    return lista.slice().sort(function (a, b) {
+      var da = parseDataBR(a.data);
+      var db = parseDataBR(b.data);
+      if (da &amp;&amp; db) {
+        var ta = da.ano * 10000 + da.mes * 100 + da.dia;
+        var tb = db.ano * 10000 + db.mes * 100 + db.dia;
+        if (ta !== tb) return ta - tb;
+      }
+      return String(a.numero).localeCompare(String(b.numero));
+    });
+  }
+
+  function csvEscape(valor) {
+    var s = valor == null ? &quot;&quot; : String(valor);
+    if (/[&quot;,\n\r]/.test(s)) {
+      return &#x27;&quot;&#x27; + s.replace(/&quot;/g, &#x27;&quot;&quot;&#x27;) + &#x27;&quot;&#x27;;
+    }
+    return s;
+  }
+
+  function gerarCsv(notas) {
+    var header = [
+      &quot;Data&quot;,
+      &quot;Documento&quot;,
+      &quot;Emitida para&quot;,
+      &quot;Competência&quot;,
+      &quot;Município&quot;,
+      &quot;Valor&quot;,
+      &quot;Situação&quot;,
+      &quot;Número NFS-e&quot;,
+    ];
+    var linhas = [header.join(&quot;,&quot;)];
+    notas.forEach(function (n) {
+      linhas.push(
+        [
+          csvEscape(n.data),
+          csvEscape(n.documento),
+          csvEscape(n.nome),
+          csvEscape(n.competencia),
+          csvEscape(n.municipio),
+          csvEscape(n.valorTexto),
+          csvEscape(n.situacao),
+          csvEscape(n.numero),
+        ].join(&quot;,&quot;)
+      );
+    });
+    return &quot;\uFEFF&quot; + linhas.join(&quot;\r\n&quot;);
+  }
+
+  function baixarArquivo(conteudo, nome, mime) {
+    var blob = new Blob([conteudo], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement(&quot;a&quot;);
+    a.href = url;
+    a.download = nome;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      URL.revokeObjectURL(url);
+    }, 1000);
+  }
+
+  function baixarCsv(notas, nomeArquivo) {
+    baixarArquivo(
+      gerarCsv(notas),
+      nomeArquivo || &quot;nfse-emitidas.csv&quot;,
+      &quot;text/csv;charset=utf-8;&quot;
+    );
+  }
+
+  function gerarPdf(notas, ano) {
+    var total = somarNotas(notas);
+    var linhas = notas
+      .map(function (n) {
+        return (
+          &quot;&lt;tr&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.data) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.documento) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.nome) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.competencia) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.municipio) +
+          &quot;&lt;/td&gt;&quot; +
+          &#x27;&lt;td style=&quot;text-align:right&quot;&gt;&#x27; +
+          escHtml(n.valorTexto) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.situacao) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;td&gt;&quot; +
+          escHtml(n.numero) +
+          &quot;&lt;/td&gt;&quot; +
+          &quot;&lt;/tr&gt;&quot;
+        );
+      })
+      .join(&quot;&quot;);
+
+    var html =
+      &quot;&lt;!DOCTYPE html&gt;&lt;html lang=\&quot;pt-BR\&quot;&gt;&lt;head&gt;&lt;meta charset=\&quot;utf-8\&quot;&gt;&quot; +
+      &quot;&lt;title&gt;NFS-e Emitidas &quot; +
+      ano +
+      &quot;&lt;/title&gt;&quot; +
+      &quot;&lt;style&gt;&quot; +
+      &quot;body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;margin:24px;}&quot; +
+      &quot;h1{font-size:18px;margin:0 0 8px;}&quot; +
+      &quot;.meta{margin-bottom:16px;}&quot; +
+      &quot;table{width:100%;border-collapse:collapse;}&quot; +
+      &quot;th,td{border:1px solid #ccc;padding:4px 6px;vertical-align:top;}&quot; +
+      &quot;th{background:#eee;text-align:left;}&quot; +
+      &quot;@media print{body{margin:12px;} .no-print{display:none;}}&quot; +
+      &quot;&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&quot; +
+      &quot;&lt;h1&gt;NFS-e Emitidas — &quot; +
+      ano +
+      &quot;&lt;/h1&gt;&quot; +
+      &#x27;&lt;div class=&quot;meta&quot;&gt;Quantidade: &lt;strong&gt;&#x27; +
+      notas.length +
+      &quot;&lt;/strong&gt; &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot; +
+      formatValorBR(total) +
+      &quot;&lt;/strong&gt;&lt;/div&gt;&quot; +
+      &#x27;&lt;p class=&quot;no-print&quot;&gt;Use a impressão do navegador e escolha &amp;quot;Salvar como PDF&amp;quot;.&lt;/p&gt;&#x27; +
+      &quot;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&quot; +
+      &quot;&lt;th&gt;Data&lt;/th&gt;&lt;th&gt;Documento&lt;/th&gt;&lt;th&gt;Emitida para&lt;/th&gt;&lt;th&gt;Competência&lt;/th&gt;&quot; +
+      &quot;&lt;th&gt;Município&lt;/th&gt;&lt;th&gt;Valor&lt;/th&gt;&lt;th&gt;Situação&lt;/th&gt;&lt;th&gt;Número NFS-e&lt;/th&gt;&quot; +
+      &quot;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&quot; +
+      linhas +
+      &quot;&lt;/tbody&gt;&lt;/table&gt;&quot; +
+      &quot;&lt;script&gt;window.onload=function(){setTimeout(function(){window.print();},300);}&lt;\\/script&gt;&quot; +
+      &quot;&lt;/body&gt;&lt;/html&gt;&quot;;
+
+    var blob = new Blob([html], { type: &quot;text/html;charset=utf-8&quot; });
+    var blobUrl = URL.createObjectURL(blob);
+    var win = window.open(blobUrl, &quot;_blank&quot;);
+    if (!win) {
+      URL.revokeObjectURL(blobUrl);
+      alert(
+        &quot;Não foi possível abrir a janela do PDF. Permita pop-ups para este site.&quot;
+      );
+      return;
+    }
+    setTimeout(function () {
+      URL.revokeObjectURL(blobUrl);
+    }, 60000);
+  }
+
+  function escHtml(s) {
+    return String(s == null ? &quot;&quot; : s)
+      .replace(/&amp;/g, &quot;&amp;amp;&quot;)
+      .replace(/&lt;/g, &quot;&amp;lt;&quot;)
+      .replace(/&gt;/g, &quot;&amp;gt;&quot;)
+      .replace(/&quot;/g, &quot;&amp;quot;&quot;);
+  }
+
+  function ultimoDiaDoMes(ano, mes) {
+    return new Date(ano, mes, 0).getDate();
+  }
+
+  function pad2(n) {
+    return String(n).padStart(2, &quot;0&quot;);
+  }
+
+  function formatarDataBR(dia, mes, ano) {
+    return pad2(dia) + &quot;/&quot; + pad2(mes) + &quot;/&quot; + ano;
+  }
+
+  function parseDataBR(texto) {
+    var m = String(texto || &quot;&quot;).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) return null;
+    return {
+      dia: parseInt(m[1], 10),
+      mes: parseInt(m[2], 10),
+      ano: parseInt(m[3], 10),
+    };
+  }
+
+  function definirCampoData(id, valor) {
+    var input = document.getElementById(id);
+    if (!input) return;
+    input.value = valor;
+    input.dispatchEvent(new Event(&quot;input&quot;, { bubbles: true }));
+    input.dispatchEvent(new Event(&quot;change&quot;, { bubbles: true }));
+  }
+
+  function aplicarPeriodoMes(ano, mes) {
+    var ultimo = ultimoDiaDoMes(ano, mes);
+    definirCampoData(&quot;datainicio&quot;, formatarDataBR(1, mes, ano));
+    definirCampoData(&quot;datafim&quot;, formatarDataBR(ultimo, mes, ano));
+  }
+
+  function mesAnoIniciais() {
+    var inicio = parseDataBR(
+      (document.getElementById(&quot;datainicio&quot;) || {}).value
+    );
+    if (inicio) {
+      return { mes: inicio.mes, ano: inicio.ano };
+    }
+    var hoje = new Date();
+    return { mes: hoje.getMonth() + 1, ano: hoje.getFullYear() };
+  }
+
+  function anoSelecionado() {
+    var sel = document.getElementById(PREFIX + &quot;-ano&quot;);
+    if (sel &amp;&amp; sel.value) return parseInt(sel.value, 10);
+    return mesAnoIniciais().ano;
+  }
+
+  /**
+   * Períodos de no máximo 30 dias (limite do portal).
+   * Meses com 31 dias: 01–30 e 31–31.
+   */
+  function periodosDoMes(ano, mes) {
+    var ultimo = ultimoDiaDoMes(ano, mes);
+    if (ultimo &lt;= 30) {
+      return [
+        {
+          inicio: formatarDataBR(1, mes, ano),
+          fim: formatarDataBR(ultimo, mes, ano),
+        },
+      ];
+    }
+    return [
+      {
+        inicio: formatarDataBR(1, mes, ano),
+        fim: formatarDataBR(30, mes, ano),
+      },
+      {
+        inicio: formatarDataBR(31, mes, ano),
+        fim: formatarDataBR(31, mes, ano),
+      },
+    ];
+  }
+
+  function periodosDoAno(ano) {
+    var periodos = [];
+    for (var mes = 1; mes &lt;= 12; mes++) {
+      periodos = periodos.concat(periodosDoMes(ano, mes));
+    }
+    return periodos;
+  }
+
+  function caminhoEmitidas() {
+    var form = document.querySelector(&quot;#pnlComandos form.navbar-form[action]&quot;);
+    var action = form &amp;&amp; form.getAttribute(&quot;action&quot;);
+    if (action &amp;&amp; action.indexOf(&quot;javascript:&quot;) !== 0) {
+      return action;
+    }
+    // Usa o caminho atual (respeita maiúsculas do portal)
+    if (/\/Notas\/Emitidas/i.test(location.pathname)) {
+      return location.pathname;
+    }
+    return &quot;/EmissorNacional/Notas/Emitidas&quot;;
+  }
+
+  function urlEmitidas(datainicio, datafim) {
+    var url = new URL(caminhoEmitidas(), location.href);
+    url.search = &quot;&quot;;
+    url.searchParams.set(&quot;datainicio&quot;, datainicio);
+    url.searchParams.set(&quot;datafim&quot;, datafim);
+    if (url.protocol !== &quot;http:&quot; &amp;&amp; url.protocol !== &quot;https:&quot;) {
+      throw new Error(&quot;URL inválida para busca: &quot; + url.href);
+    }
+    return url.href;
+  }
+
+  function sleep(ms) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  function coletarNotasDeDocumento(doc) {
+    if (!doc) return [];
+    var tabela = doc.querySelector(&quot;table.table.table-striped&quot;);
+    return coletarNotas(tabela);
+  }
+
+  function ehUrlHttpMesmaOrigem(href) {
+    try {
+      var u = new URL(href, location.href);
+      if (u.protocol !== &quot;http:&quot; &amp;&amp; u.protocol !== &quot;https:&quot;) return false;
+      if (u.origin !== location.origin) return false;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function urlsPaginacao(doc, urlBasePeriodo) {
+    var links = doc.querySelectorAll(&quot;.paginacao a[href]&quot;);
+    var urls = [];
+    var vistos = Object.create(null);
+    vistos[urlBasePeriodo] = true;
+    Array.prototype.forEach.call(links, function (a) {
+      var raw = a.getAttribute(&quot;href&quot;) || &quot;&quot;;
+      if (!raw || raw.indexOf(&quot;javascript:&quot;) === 0 || raw.charAt(0) === &quot;#&quot;) {
+        return;
+      }
+      try {
+        var abs = new URL(raw, location.href).href;
+        if (!ehUrlHttpMesmaOrigem(abs) || vistos[abs]) return;
+        vistos[abs] = true;
+        urls.push(abs);
+      } catch (e) {
+        /* ignore */
+      }
+    });
+    return urls;
+  }
+
+  async function fetchHtml(url) {
+    if (!ehUrlHttpMesmaOrigem(url)) {
+      throw new Error(&quot;URL bloqueada (não http mesma origem): &quot; + url);
+    }
+    var resp = await fetch(url, {
+      method: &quot;GET&quot;,
+      credentials: &quot;same-origin&quot;,
+      cache: &quot;no-store&quot;,
+      redirect: &quot;follow&quot;,
+      headers: {
+        Accept: &quot;text/html,application/xhtml+xml;q=0.9,*/*;q=0.8&quot;,
+      },
+    });
+    if (!resp.ok) {
+      throw new Error(&quot;HTTP &quot; + resp.status + &quot; ao buscar &quot; + url);
+    }
+    return resp.text();
+  }
+
+  async function buscarNotasPeriodo(datainicio, datafim) {
+    var url = urlEmitidas(datainicio, datafim);
+    var html = await fetchHtml(url);
+    var doc = new DOMParser().parseFromString(html, &quot;text/html&quot;);
+    var notas = coletarNotasDeDocumento(doc);
+
+    var paginas = urlsPaginacao(doc, url);
+    for (var i = 0; i &lt; paginas.length; i++) {
+      await sleep(300);
+      var htmlPag = await fetchHtml(paginas[i]);
+      var docPag = new DOMParser().parseFromString(htmlPag, &quot;text/html&quot;);
+      notas = notas.concat(coletarNotasDeDocumento(docPag));
+    }
+    return notas;
+  }
+
+  async function buscarNotasDoAno(ano, onProgresso) {
+    var periodos = periodosDoAno(ano);
+    var todas = [];
+    for (var i = 0; i &lt; periodos.length; i++) {
+      var p = periodos[i];
+      if (onProgresso) {
+        onProgresso(
+          &quot;Buscando &quot; +
+            p.inicio +
+            &quot; a &quot; +
+            p.fim +
+            &quot; (&quot; +
+            (i + 1) +
+            &quot;/&quot; +
+            periodos.length +
+            &quot;)…&quot;
+        );
+      }
+      var lote = await buscarNotasPeriodo(p.inicio, p.fim);
+      todas = todas.concat(lote);
+      await sleep(400);
+    }
+    return ordenarNotas(deduplicarNotas(todas));
+  }
+
+  function injetarCheckboxes(tabela) {
+    var theadRow = tabela.querySelector(&quot;thead tr&quot;);
+    if (theadRow &amp;&amp; !theadRow.querySelector(&quot;.&quot; + COL_CLASS)) {
+      var th = document.createElement(&quot;th&quot;);
+      th.className = COL_CLASS;
+      var master = document.createElement(&quot;input&quot;);
+      master.type = &quot;checkbox&quot;;
+      master.className = CHECK_CLASS + &quot;-master&quot;;
+      master.title = &quot;Marcar / desmarcar todos&quot;;
+      master.setAttribute(&quot;aria-label&quot;, &quot;Marcar ou desmarcar todas as notas&quot;);
+      master.addEventListener(&quot;change&quot;, function () {
+        var checked = master.checked;
+        tabela.querySelectorAll(&quot;tbody .&quot; + CHECK_CLASS).forEach(function (cb) {
+          cb.checked = checked;
+        });
+      });
+      th.appendChild(master);
+      theadRow.insertBefore(th, theadRow.firstChild);
+    }
+
+    getLinhasNotas(tabela).forEach(function (tr) {
+      if (tr.querySelector(&quot;.&quot; + COL_CLASS)) return;
+      var td = document.createElement(&quot;td&quot;);
+      td.className = COL_CLASS;
+      var cb = document.createElement(&quot;input&quot;);
+      cb.type = &quot;checkbox&quot;;
+      cb.className = CHECK_CLASS;
+      cb.setAttribute(&quot;aria-label&quot;, &quot;Selecionar nota&quot;);
+      cb.addEventListener(&quot;change&quot;, function () {
+        var master = tabela.querySelector(&quot;.&quot; + CHECK_CLASS + &quot;-master&quot;);
+        if (!master) return;
+        var todos = tabela.querySelectorAll(&quot;tbody .&quot; + CHECK_CLASS);
+        var marcados = tabela.querySelectorAll(
+          &quot;tbody .&quot; + CHECK_CLASS + &quot;:checked&quot;
+        );
+        master.checked = todos.length &gt; 0 &amp;&amp; marcados.length === todos.length;
+        master.indeterminate =
+          marcados.length &gt; 0 &amp;&amp; marcados.length &lt; todos.length;
+      });
+      td.appendChild(cb);
+      tr.insertBefore(td, tr.firstChild);
+    });
+  }
+
+  function injetarTotal(tabela) {
+    var notas = coletarNotas(tabela);
+    var total = somarNotas(notas);
+
+    var box = document.createElement(&quot;div&quot;);
+    box.id = TOTAL_ID;
+    box.innerHTML =
+      &quot;Notas na listagem: &lt;strong&gt;&quot; +
+      notas.length +
+      &quot;&lt;/strong&gt;&quot; +
+      &quot; &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot; +
+      formatValorBR(total) +
+      &quot;&lt;/strong&gt;&quot;;
+
+    tabela.parentNode.insertBefore(box, tabela);
+  }
+
+  function injetarFiltroMesAno() {
+    if (document.getElementById(FILTRO_ID)) return;
+    if (
+      !document.getElementById(&quot;datainicio&quot;) ||
+      !document.getElementById(&quot;datafim&quot;)
+    ) {
+      console.warn(
+        &quot;[nfse-resumo] Campos datainicio/datafim não encontrados; filtro mês/ano não injetado.&quot;
+      );
+      return;
+    }
+
+    var iniciais = mesAnoIniciais();
+    var anoAtual = new Date().getFullYear();
+    var anos = [];
+    for (var a = anoAtual - 10; a &lt;= anoAtual + 1; a++) {
+      anos.push(a);
+    }
+    if (anos.indexOf(iniciais.ano) === -1) {
+      anos.push(iniciais.ano);
+      anos.sort(function (x, y) {
+        return x - y;
+      });
+    }
+
+    var wrap = document.createElement(&quot;div&quot;);
+    wrap.id = FILTRO_ID;
+
+    var grupoMes = document.createElement(&quot;div&quot;);
+    grupoMes.className = &quot;nfse-ext-filtro-group&quot;;
+    var labelMes = document.createElement(&quot;label&quot;);
+    labelMes.htmlFor = PREFIX + &quot;-mes&quot;;
+    labelMes.textContent = &quot;Mês&quot;;
+    var selMes = document.createElement(&quot;select&quot;);
+    selMes.id = PREFIX + &quot;-mes&quot;;
+    MESES.forEach(function (nome, i) {
+      var opt = document.createElement(&quot;option&quot;);
+      opt.value = String(i + 1);
+      opt.textContent = nome;
+      if (i + 1 === iniciais.mes) opt.selected = true;
+      selMes.appendChild(opt);
+    });
+    grupoMes.appendChild(labelMes);
+    grupoMes.appendChild(selMes);
+
+    var grupoAno = document.createElement(&quot;div&quot;);
+    grupoAno.className = &quot;nfse-ext-filtro-group&quot;;
+    var labelAno = document.createElement(&quot;label&quot;);
+    labelAno.htmlFor = PREFIX + &quot;-ano&quot;;
+    labelAno.textContent = &quot;Ano&quot;;
+    var selAno = document.createElement(&quot;select&quot;);
+    selAno.id = PREFIX + &quot;-ano&quot;;
+    anos.forEach(function (ano) {
+      var opt = document.createElement(&quot;option&quot;);
+      opt.value = String(ano);
+      opt.textContent = String(ano);
+      if (ano === iniciais.ano) opt.selected = true;
+      selAno.appendChild(opt);
+    });
+    grupoAno.appendChild(labelAno);
+    grupoAno.appendChild(selAno);
+
+    function onPeriodoChange() {
+      cacheAno = { ano: null, notas: null };
+      aplicarPeriodoMes(parseInt(selAno.value, 10), parseInt(selMes.value, 10));
+    }
+
+    selMes.addEventListener(&quot;change&quot;, onPeriodoChange);
+    selAno.addEventListener(&quot;change&quot;, onPeriodoChange);
+
+    var grupoPesquisar = document.createElement(&quot;div&quot;);
+    grupoPesquisar.className = &quot;nfse-ext-filtro-group&quot;;
+    var labelPesquisar = document.createElement(&quot;label&quot;);
+    labelPesquisar.htmlFor = PREFIX + &quot;-pesquisar&quot;;
+    labelPesquisar.textContent = &quot;\u00a0&quot;;
+    var btnPesquisar = document.createElement(&quot;button&quot;);
+    btnPesquisar.type = &quot;button&quot;;
+    btnPesquisar.id = PREFIX + &quot;-pesquisar&quot;;
+    btnPesquisar.className = &quot;nfse-ext-btn-pesquisar&quot;;
+    btnPesquisar.textContent = &quot;Pesquisar&quot;;
+    btnPesquisar.addEventListener(&quot;click&quot;, function () {
+      onPeriodoChange();
+      var form =
+        (document.getElementById(&quot;pnlComandos&quot;) || document).querySelector(
+          &quot;form.navbar-form&quot;
+        ) || document.querySelector(&quot;#pnlComandos form&quot;);
+      if (form) {
+        if (typeof form.requestSubmit === &quot;function&quot;) form.requestSubmit();
+        else form.submit();
+      } else {
+        console.warn(
+          &quot;[nfse-resumo] Formulário de filtro não encontrado para pesquisar.&quot;
+        );
+      }
+    });
+    grupoPesquisar.appendChild(labelPesquisar);
+    grupoPesquisar.appendChild(btnPesquisar);
+
+    wrap.appendChild(grupoMes);
+    wrap.appendChild(grupoAno);
+    wrap.appendChild(grupoPesquisar);
+
+    var painel = document.getElementById(&quot;pnlComandos&quot;);
+    var form = painel &amp;&amp; painel.querySelector(&quot;form.navbar-form&quot;);
+    if (form) {
+      form.appendChild(wrap);
+    } else if (painel) {
+      painel.appendChild(wrap);
+    } else {
+      var tabela = getTabela();
+      if (tabela) tabela.parentNode.insertBefore(wrap, tabela);
+    }
+  }
+
+  function appendBtnNaBarra(btn) {
+    var painel = document.getElementById(&quot;pnlComandos&quot;);
+    var lista = painel &amp;&amp; painel.querySelector(&quot;ul.nav.navbar-nav&quot;);
+    if (lista) {
+      var li = document.createElement(&quot;li&quot;);
+      li.appendChild(btn);
+      lista.appendChild(li);
+      return;
+    }
+    if (painel) {
+      painel.appendChild(btn);
+      return;
+    }
+    btn.style.position = &quot;fixed&quot;;
+    btn.style.bottom = &quot;24px&quot;;
+    btn.style.right = &quot;24px&quot;;
+    btn.style.zIndex = &quot;99998&quot;;
+    document.body.appendChild(btn);
+  }
+
+  function injetarBotaoCsv(tabela) {
+    if (document.getElementById(BTN_ID)) return;
+
+    var btn = document.createElement(&quot;a&quot;);
+    btn.id = BTN_ID;
+    btn.href = &quot;javascript:void(0);&quot;;
+    btn.className = &quot;btn btn-lg btn-success&quot;;
+    btn.innerHTML = &quot;&lt;span&gt;Exportar CSV&lt;/span&gt;&quot;;
+    btn.addEventListener(&quot;click&quot;, function (e) {
+      e.preventDefault();
+      var hoje = new Date();
+      var nome =
+        &quot;nfse-emitidas-&quot; +
+        hoje.getFullYear() +
+        &quot;-&quot; +
+        pad2(hoje.getMonth() + 1) +
+        &quot;-&quot; +
+        pad2(hoje.getDate()) +
+        &quot;.csv&quot;;
+      baixarCsv(coletarNotas(tabela), nome);
+    });
+    appendBtnNaBarra(btn);
+  }
+
+  function fecharModalAno() {
+    var modal = document.getElementById(MODAL_ID);
+    if (modal) modal.remove();
+    document.removeEventListener(&quot;keydown&quot;, onEscapeAno);
+  }
+
+  function onEscapeAno(e) {
+    if (e.key === &quot;Escape&quot;) fecharModalAno();
+  }
+
+  function abrirModalAno() {
+    fecharModalAno();
+
+    var ano = anoSelecionado();
+    var modal = document.createElement(&quot;div&quot;);
+    modal.id = MODAL_ID;
+    modal.setAttribute(&quot;role&quot;, &quot;dialog&quot;);
+    modal.setAttribute(&quot;aria-modal&quot;, &quot;true&quot;);
+
+    modal.innerHTML =
+      &#x27;&lt;div class=&quot;nfse-ext-backdrop&quot; data-close=&quot;1&quot;&gt;&lt;/div&gt;&#x27; +
+      &#x27;&lt;div class=&quot;nfse-ext-dialog&quot;&gt;&#x27; +
+      &#x27;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-close&quot; data-close=&quot;1&quot; aria-label=&quot;Fechar&quot;&gt;&amp;times;&lt;/button&gt;&#x27; +
+      &quot;&lt;h3&gt;Exportar ano &quot; +
+      ano +
+      &quot;&lt;/h3&gt;&quot; +
+      &#x27;&lt;div class=&quot;nfse-ext-status&quot; id=&quot;&#x27; +
+      PREFIX +
+      &#x27;-ano-status&quot;&gt;Clique em Buscar para percorrer todos os meses do ano (respeitando o limite de 30 dias do portal).&lt;/div&gt;&#x27; +
+      &#x27;&lt;div class=&quot;nfse-ext-actions&quot;&gt;&#x27; +
+      &#x27;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-secondary&quot; data-close=&quot;1&quot;&gt;Fechar&lt;/button&gt;&#x27; +
+      &#x27;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-secondary&quot; id=&quot;&#x27; +
+      PREFIX +
+      &#x27;-ano-buscar&quot;&gt;Buscar ano&lt;/button&gt;&#x27; +
+      &#x27;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-primary&quot; id=&quot;&#x27; +
+      PREFIX +
+      &#x27;-ano-csv&quot; disabled&gt;Exportar CSV&lt;/button&gt;&#x27; +
+      &#x27;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-primary&quot; id=&quot;&#x27; +
+      PREFIX +
+      &#x27;-ano-pdf&quot; disabled&gt;Exportar PDF&lt;/button&gt;&#x27; +
+      &quot;&lt;/div&gt;&lt;/div&gt;&quot;;
+
+    modal.addEventListener(&quot;click&quot;, function (e) {
+      if (e.target.getAttribute(&quot;data-close&quot;) === &quot;1&quot;) fecharModalAno();
+    });
+
+    document.body.appendChild(modal);
+    document.addEventListener(&quot;keydown&quot;, onEscapeAno);
+
+    var statusEl = document.getElementById(PREFIX + &quot;-ano-status&quot;);
+    var btnBuscar = document.getElementById(PREFIX + &quot;-ano-buscar&quot;);
+    var btnCsv = document.getElementById(PREFIX + &quot;-ano-csv&quot;);
+    var btnPdf = document.getElementById(PREFIX + &quot;-ano-pdf&quot;);
+
+    function atualizarBotoesExport() {
+      var pronto = cacheAno.ano === ano &amp;&amp; Array.isArray(cacheAno.notas);
+      btnCsv.disabled = !pronto;
+      btnPdf.disabled = !pronto;
+      if (pronto) {
+        statusEl.innerHTML =
+          &quot;Pronto: &lt;strong&gt;&quot; +
+          cacheAno.notas.length +
+          &quot;&lt;/strong&gt; notas &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot; +
+          formatValorBR(somarNotas(cacheAno.notas)) +
+          &quot;&lt;/strong&gt;&quot;;
+      }
+    }
+
+    if (cacheAno.ano === ano &amp;&amp; Array.isArray(cacheAno.notas)) {
+      atualizarBotoesExport();
+    }
+
+    btnBuscar.addEventListener(&quot;click&quot;, async function () {
+      btnBuscar.disabled = true;
+      btnCsv.disabled = true;
+      btnPdf.disabled = true;
+      try {
+        var notas = await buscarNotasDoAno(ano, function (msg) {
+          statusEl.textContent = msg;
+        });
+        cacheAno = { ano: ano, notas: notas };
+        atualizarBotoesExport();
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent =
+          &quot;Falha na busca: &quot; + (err &amp;&amp; err.message ? err.message : String(err));
+      } finally {
+        btnBuscar.disabled = false;
+      }
+    });
+
+    btnCsv.addEventListener(&quot;click&quot;, function () {
+      if (!cacheAno.notas) return;
+      baixarCsv(cacheAno.notas, &quot;nfse-emitidas-&quot; + ano + &quot;.csv&quot;);
+    });
+
+    btnPdf.addEventListener(&quot;click&quot;, function () {
+      if (!cacheAno.notas) return;
+      gerarPdf(cacheAno.notas, ano);
+    });
+  }
+
+  function injetarBotaoAno() {
+    if (document.getElementById(BTN_ANO_ID)) return;
+
+    var btn = document.createElement(&quot;a&quot;);
+    btn.id = BTN_ANO_ID;
+    btn.href = &quot;javascript:void(0);&quot;;
+    btn.className = &quot;btn btn-lg btn-warning&quot;;
+    btn.innerHTML = &quot;&lt;span&gt;Exportar ano selecionado&lt;/span&gt;&quot;;
+    btn.addEventListener(&quot;click&quot;, function (e) {
+      e.preventDefault();
+      abrirModalAno();
+    });
+    appendBtnNaBarra(btn);
+  }
+
+  // --- bootstrap ---
+  cleanup();
+
+  var tabela = getTabela();
+  if (!tabela) {
+    console.error(
+      &quot;[nfse-resumo] Tabela de notas não encontrada. Execute na página de NFS-e Emitidas.&quot;
+    );
+    return;
+  }
+
+  if (getLinhasNotas(tabela).length === 0) {
+    console.warn(&quot;[nfse-resumo] Nenhuma nota listada na tabela.&quot;);
+  }
+
+  injectStyles();
+  injetarFiltroMesAno();
+  injetarCheckboxes(tabela);
+  injetarTotal(tabela);
+  injetarBotaoCsv(tabela);
+  injetarBotaoAno();
+
+  console.info(
+    &quot;[nfse-resumo] Pronto. Use \&quot;Exportar ano selecionado\&quot; para CSV/PDF do ano.&quot;
+  );
+})();
+</pre>
+    </section>
+
+    <section>
+      <h2>Opção B — Favorito na barra do navegador</h2>
+      <p>Depois de criar o favorito, basta clicar nele quando estiver em NFS-e Emitidas.</p>
+      <ol>
+        <li>Clique em <strong>Copiar favorito</strong>.</li>
+        <li>Crie um favorito chamado <strong>NFS-e Resumo</strong>.</li>
+        <li>No campo de endereço do favorito, cole o texto copiado (ele começa com <code class="inline">javascript:</code>).</li>
+        <li>Abra NFS-e Emitidas e clique no favorito.</li>
+      </ol>
+      <div class="toolbar">
+        <button type="button" class="copy" data-copy="bookmarklet-source">Copiar favorito</button>
+      </div>
+      <textarea class="bookmarklet" id="bookmarklet-source" readonly>javascript:!function(){&quot;use strict&quot;;var e=&quot;nfse-ext&quot;,t=e+&quot;-styles&quot;,n=e+&quot;-btn-export&quot;,a=e+&quot;-btn-ano&quot;,o=e+&quot;-total&quot;,r=e+&quot;-filtro-mes&quot;,i=e+&quot;-modal-ano&quot;,c=e+&quot;-check&quot;,d=e+&quot;-col-check&quot;,l=[&quot;Janeiro&quot;,&quot;Fevereiro&quot;,&quot;Março&quot;,&quot;Abril&quot;,&quot;Maio&quot;,&quot;Junho&quot;,&quot;Julho&quot;,&quot;Agosto&quot;,&quot;Setembro&quot;,&quot;Outubro&quot;,&quot;Novembro&quot;,&quot;Dezembro&quot;],s={ano:null,notas:null};function u(e){if(!e)return 0;var t=String(e).trim().replace(/\./g,&quot;&quot;).replace(&quot;,&quot;,&quot;.&quot;),n=parseFloat(t);return isNaN(n)?0:n}function p(e){return e.toLocaleString(&quot;pt-BR&quot;,{minimumFractionDigits:2,maximumFractionDigits:2})}function m(e){return e?e.textContent.replace(/\s+/g,&quot; &quot;).trim():&quot;&quot;}function f(){return document.querySelector(&quot;table.table.table-striped&quot;)}function h(e){return e?Array.prototype.slice.call(e.querySelectorAll(&quot;tbody tr[data-valor]&quot;)):[]}function g(e){var t=e.querySelector(&#x27;a[href*=&quot;/Notas/Visualizar/&quot;]&#x27;);if(!t)return&quot;&quot;;var n=t.getAttribute(&quot;href&quot;).split(&quot;/&quot;);return n[n.length-1]||&quot;&quot;}function v(e){var t=e.querySelector(&quot;.td-situacao img&quot;);return t&amp;&amp;(t.getAttribute(&quot;alt&quot;)||t.getAttribute(&quot;data-original-title&quot;)||t.getAttribute(&quot;title&quot;))||&quot;&quot;}function b(e){return h(e).map(function(e){var t=function(e){if(!e)return{documento:&quot;&quot;,nome:&quot;&quot;,completo:&quot;&quot;};var t=e.querySelector(&quot;.cpf, .cnpj&quot;),n=t?m(t):&quot;&quot;,a=m(e),o=a;return n&amp;&amp;(o=a.replace(n,&quot;&quot;).replace(/^[\s\-–—]+/,&quot;&quot;).trim()),{documento:n,nome:o,completo:a}}(e.querySelector(&quot;.td-texto-grande&quot;));return{data:m(e.querySelector(&quot;.td-data&quot;)),documento:t.documento,nome:t.nome,emitidaPara:t.completo,competencia:m(e.querySelector(&quot;.td-competencia&quot;)),municipio:m(e.querySelector(&quot;.td-center&quot;)),valorTexto:e.getAttribute(&quot;data-valor&quot;)||m(e.querySelector(&quot;.td-valor&quot;)),valor:u(e.getAttribute(&quot;data-valor&quot;)),situacao:v(e),numero:g(e)}})}function x(e){return e.reduce(function(e,t){return e+t.valor},0)}function y(e){var t=null==e?&quot;&quot;:String(e);return/[&quot;,\n\r]/.test(t)?&#x27;&quot;&#x27;+t.replace(/&quot;/g,&#x27;&quot;&quot;&#x27;)+&#x27;&quot;&#x27;:t}function E(e,t){var n,a,o,r,i;n=function(e){var t=[[&quot;Data&quot;,&quot;Documento&quot;,&quot;Emitida para&quot;,&quot;Competência&quot;,&quot;Município&quot;,&quot;Valor&quot;,&quot;Situação&quot;,&quot;Número NFS-e&quot;].join(&quot;,&quot;)];return e.forEach(function(e){t.push([y(e.data),y(e.documento),y(e.nome),y(e.competencia),y(e.municipio),y(e.valorTexto),y(e.situacao),y(e.numero)].join(&quot;,&quot;))}),&quot;\ufeff&quot;+t.join(&quot;\r\n&quot;)}(e),a=t||&quot;nfse-emitidas.csv&quot;,o=new Blob([n],{type:&quot;text/csv;charset=utf-8;&quot;}),r=URL.createObjectURL(o),(i=document.createElement(&quot;a&quot;)).href=r,i.download=a,document.body.appendChild(i),i.click(),i.remove(),setTimeout(function(){URL.revokeObjectURL(r)},1e3)}function S(e){return String(null==e?&quot;&quot;:e).replace(/&amp;/g,&quot;&amp;amp;&quot;).replace(/&lt;/g,&quot;&amp;lt;&quot;).replace(/&gt;/g,&quot;&amp;gt;&quot;).replace(/&quot;/g,&quot;&amp;quot;&quot;)}function w(e,t){return new Date(e,t,0).getDate()}function C(e){return String(e).padStart(2,&quot;0&quot;)}function q(e,t,n){return C(e)+&quot;/&quot;+C(t)+&quot;/&quot;+n}function k(e){var t=String(e||&quot;&quot;).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);return t?{dia:parseInt(t[1],10),mes:parseInt(t[2],10),ano:parseInt(t[3],10)}:null}function L(e,t){var n=document.getElementById(e);n&amp;&amp;(n.value=t,n.dispatchEvent(new Event(&quot;input&quot;,{bubbles:!0})),n.dispatchEvent(new Event(&quot;change&quot;,{bubbles:!0})))}function A(){var e=k((document.getElementById(&quot;datainicio&quot;)||{}).value);if(e)return{mes:e.mes,ano:e.ano};var t=new Date;return{mes:t.getMonth()+1,ano:t.getFullYear()}}function B(e,t){var n=w(e,t);return n&lt;=30?[{inicio:q(1,t,e),fim:q(n,t,e)}]:[{inicio:q(1,t,e),fim:q(30,t,e)},{inicio:q(31,t,e),fim:q(31,t,e)}]}function N(e,t){var n,a,o=new URL((n=document.querySelector(&quot;#pnlComandos form.navbar-form[action]&quot;),(a=n&amp;&amp;n.getAttribute(&quot;action&quot;))&amp;&amp;0!==a.indexOf(&quot;javascript:&quot;)?a:/\/Notas\/Emitidas/i.test(location.pathname)?location.pathname:&quot;/EmissorNacional/Notas/Emitidas&quot;),location.href);if(o.search=&quot;&quot;,o.searchParams.set(&quot;datainicio&quot;,e),o.searchParams.set(&quot;datafim&quot;,t),&quot;http:&quot;!==o.protocol&amp;&amp;&quot;https:&quot;!==o.protocol)throw new Error(&quot;URL inválida para busca: &quot;+o.href);return o.href}function I(e){return new Promise(function(t){setTimeout(t,e)})}function F(e){return e?b(e.querySelector(&quot;table.table.table-striped&quot;)):[]}function j(e){try{var t=new URL(e,location.href);return(&quot;http:&quot;===t.protocol||&quot;https:&quot;===t.protocol)&amp;&amp;t.origin===location.origin}catch(e){return!1}}async function D(e){if(!j(e))throw new Error(&quot;URL bloqueada (não http mesma origem): &quot;+e);var t=await fetch(e,{method:&quot;GET&quot;,credentials:&quot;same-origin&quot;,cache:&quot;no-store&quot;,redirect:&quot;follow&quot;,headers:{Accept:&quot;text/html,application/xhtml+xml;q=0.9,*/*;q=0.8&quot;}});if(!t.ok)throw new Error(&quot;HTTP &quot;+t.status+&quot; ao buscar &quot;+e);return t.text()}async function R(e,t){for(var n=N(e,t),a=await D(n),o=(new DOMParser).parseFromString(a,&quot;text/html&quot;),r=F(o),i=function(e,t){var n=e.querySelectorAll(&quot;.paginacao a[href]&quot;),a=[],o=Object.create(null);return o[t]=!0,Array.prototype.forEach.call(n,function(e){var t=e.getAttribute(&quot;href&quot;)||&quot;&quot;;if(t&amp;&amp;0!==t.indexOf(&quot;javascript:&quot;)&amp;&amp;&quot;#&quot;!==t.charAt(0))try{var n=new URL(t,location.href).href;if(!j(n)||o[n])return;o[n]=!0,a.push(n)}catch(e){}}),a}(o,n),c=0;c&lt;i.length;c++){await I(300);var d=await D(i[c]),l=(new DOMParser).parseFromString(d,&quot;text/html&quot;);r=r.concat(F(l))}return r}async function T(e,t){for(var n,a,o,r=function(e){for(var t=[],n=1;n&lt;=12;n++)t=t.concat(B(e,n));return t}(e),i=[],c=0;c&lt;r.length;c++){var d=r[c];t&amp;&amp;t(&quot;Buscando &quot;+d.inicio+&quot; a &quot;+d.fim+&quot; (&quot;+(c+1)+&quot;/&quot;+r.length+&quot;)…&quot;);var l=await R(d.inicio,d.fim);i=i.concat(l),await I(400)}return function(e){return e.slice().sort(function(e,t){var n=k(e.data),a=k(t.data);if(n&amp;&amp;a){var o=1e4*n.ano+100*n.mes+n.dia,r=1e4*a.ano+100*a.mes+a.dia;if(o!==r)return o-r}return String(e.numero).localeCompare(String(t.numero))})}((n=i,a=Object.create(null),o=[],n.forEach(function(e){var t=function(e){return e.numero||[e.data,e.documento,e.valorTexto,e.nome].join(&quot;|&quot;)}(e);a[t]||(a[t]=!0,o.push(e))}),o))}function U(e){var t=document.getElementById(&quot;pnlComandos&quot;),n=t&amp;&amp;t.querySelector(&quot;ul.nav.navbar-nav&quot;);if(n){var a=document.createElement(&quot;li&quot;);return a.appendChild(e),void n.appendChild(a)}t?t.appendChild(e):(e.style.position=&quot;fixed&quot;,e.style.bottom=&quot;24px&quot;,e.style.right=&quot;24px&quot;,e.style.zIndex=&quot;99998&quot;,document.body.appendChild(e))}function z(){var e=document.getElementById(i);e&amp;&amp;e.remove(),document.removeEventListener(&quot;keydown&quot;,M)}function M(e){&quot;Escape&quot;===e.key&amp;&amp;z()}function P(){z();var t,n=(t=document.getElementById(e+&quot;-ano&quot;))&amp;&amp;t.value?parseInt(t.value,10):A().ano,a=document.createElement(&quot;div&quot;);a.id=i,a.setAttribute(&quot;role&quot;,&quot;dialog&quot;),a.setAttribute(&quot;aria-modal&quot;,&quot;true&quot;),a.innerHTML=&#x27;&lt;div class=&quot;nfse-ext-backdrop&quot; data-close=&quot;1&quot;&gt;&lt;/div&gt;&lt;div class=&quot;nfse-ext-dialog&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-close&quot; data-close=&quot;1&quot; aria-label=&quot;Fechar&quot;&gt;&amp;times;&lt;/button&gt;&lt;h3&gt;Exportar ano &#x27;+n+&#x27;&lt;/h3&gt;&lt;div class=&quot;nfse-ext-status&quot; id=&quot;&#x27;+e+&#x27;-ano-status&quot;&gt;Clique em Buscar para percorrer todos os meses do ano (respeitando o limite de 30 dias do portal).&lt;/div&gt;&lt;div class=&quot;nfse-ext-actions&quot;&gt;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-secondary&quot; data-close=&quot;1&quot;&gt;Fechar&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-secondary&quot; id=&quot;&#x27;+e+&#x27;-ano-buscar&quot;&gt;Buscar ano&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-primary&quot; id=&quot;&#x27;+e+&#x27;-ano-csv&quot; disabled&gt;Exportar CSV&lt;/button&gt;&lt;button type=&quot;button&quot; class=&quot;nfse-ext-btn-primary&quot; id=&quot;&#x27;+e+&#x27;-ano-pdf&quot; disabled&gt;Exportar PDF&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;&#x27;,a.addEventListener(&quot;click&quot;,function(e){&quot;1&quot;===e.target.getAttribute(&quot;data-close&quot;)&amp;&amp;z()}),document.body.appendChild(a),document.addEventListener(&quot;keydown&quot;,M);var o=document.getElementById(e+&quot;-ano-status&quot;),r=document.getElementById(e+&quot;-ano-buscar&quot;),c=document.getElementById(e+&quot;-ano-csv&quot;),d=document.getElementById(e+&quot;-ano-pdf&quot;);function l(){var e=s.ano===n&amp;&amp;Array.isArray(s.notas);c.disabled=!e,d.disabled=!e,e&amp;&amp;(o.innerHTML=&quot;Pronto: &lt;strong&gt;&quot;+s.notas.length+&quot;&lt;/strong&gt; notas &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot;+p(x(s.notas))+&quot;&lt;/strong&gt;&quot;)}s.ano===n&amp;&amp;Array.isArray(s.notas)&amp;&amp;l(),r.addEventListener(&quot;click&quot;,async function(){r.disabled=!0,c.disabled=!0,d.disabled=!0;try{var e=await T(n,function(e){o.textContent=e});s={ano:n,notas:e},l()}catch(e){console.error(e),o.textContent=&quot;Falha na busca: &quot;+(e&amp;&amp;e.message?e.message:String(e))}finally{r.disabled=!1}}),c.addEventListener(&quot;click&quot;,function(){s.notas&amp;&amp;E(s.notas,&quot;nfse-emitidas-&quot;+n+&quot;.csv&quot;)}),d.addEventListener(&quot;click&quot;,function(){s.notas&amp;&amp;function(e,t){var n=x(e),a=e.map(function(e){return&quot;&lt;tr&gt;&lt;td&gt;&quot;+S(e.data)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.documento)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.nome)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.competencia)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.municipio)+&#x27;&lt;/td&gt;&lt;td style=&quot;text-align:right&quot;&gt;&#x27;+S(e.valorTexto)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.situacao)+&quot;&lt;/td&gt;&lt;td&gt;&quot;+S(e.numero)+&quot;&lt;/td&gt;&lt;/tr&gt;&quot;}).join(&quot;&quot;),o=&#x27;&lt;!DOCTYPE html&gt;&lt;html lang=&quot;pt-BR&quot;&gt;&lt;head&gt;&lt;meta charset=&quot;utf-8&quot;&gt;&lt;title&gt;NFS-e Emitidas &#x27;+t+&quot;&lt;/title&gt;&lt;style&gt;body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#111;margin:24px;}h1{font-size:18px;margin:0 0 8px;}.meta{margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:4px 6px;vertical-align:top;}th{background:#eee;text-align:left;}@media print{body{margin:12px;} .no-print{display:none;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;h1&gt;NFS-e Emitidas — &quot;+t+&#x27;&lt;/h1&gt;&lt;div class=&quot;meta&quot;&gt;Quantidade: &lt;strong&gt;&#x27;+e.length+&quot;&lt;/strong&gt; &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot;+p(n)+&#x27;&lt;/strong&gt;&lt;/div&gt;&lt;p class=&quot;no-print&quot;&gt;Use a impressão do navegador e escolha &amp;quot;Salvar como PDF&amp;quot;.&lt;/p&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Data&lt;/th&gt;&lt;th&gt;Documento&lt;/th&gt;&lt;th&gt;Emitida para&lt;/th&gt;&lt;th&gt;Competência&lt;/th&gt;&lt;th&gt;Município&lt;/th&gt;&lt;th&gt;Valor&lt;/th&gt;&lt;th&gt;Situação&lt;/th&gt;&lt;th&gt;Número NFS-e&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&#x27;+a+&quot;&lt;/tbody&gt;&lt;/table&gt;&lt;script&gt;window.onload=function(){setTimeout(function(){window.print();},300);}&lt;\\/script&gt;&lt;/body&gt;&lt;/html&gt;&quot;,r=new Blob([o],{type:&quot;text/html;charset=utf-8&quot;}),i=URL.createObjectURL(r);if(!window.open(i,&quot;_blank&quot;))return URL.revokeObjectURL(i),void alert(&quot;Não foi possível abrir a janela do PDF. Permita pop-ups para este site.&quot;);setTimeout(function(){URL.revokeObjectURL(i)},6e4)}(s.notas,n)})}!function(){var e=document.getElementById(t);e&amp;&amp;e.remove(),[n,a].forEach(function(e){var t=document.getElementById(e);if(t){var n=t.closest(&quot;li&quot;);n?n.remove():t.remove()}});var c=document.getElementById(o);c&amp;&amp;c.remove();var l=document.getElementById(r);l&amp;&amp;l.remove();var s=document.getElementById(i);s&amp;&amp;s.remove(),document.querySelectorAll(&quot;.&quot;+d).forEach(function(e){e.remove()})}();var O,H,V=f();V?(0===h(V).length&amp;&amp;console.warn(&quot;[nfse-resumo] Nenhuma nota listada na tabela.&quot;),O=[&quot;#&quot;+n+&quot;,#&quot;+a+&quot;{display:inline-flex;align-items:center;gap:8px;margin-left:8px;}&quot;,&quot;.&quot;+d+&quot;{width:36px;text-align:center;vertical-align:middle;}&quot;,&quot;.&quot;+d+&quot; input[type=checkbox]{width:16px;height:16px;cursor:pointer;margin:0;}&quot;,&quot;#&quot;+o+&quot;{margin:12px 0 16px;padding:12px 16px;background:#e8f4fc;border:1px solid #b8d4e8;border-radius:4px;font-size:15px;line-height:1.5;color:#1a3a52;}&quot;,&quot;#&quot;+o+&quot; strong{font-size:17px;}&quot;,&quot;#&quot;+r+&quot;{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px;margin:12px 0 8px;padding:12px 16px;background:#f7fafc;border:1px solid #d0dce6;border-radius:4px;}&quot;,&quot;#&quot;+r+&quot; .nfse-ext-filtro-group{display:flex;flex-direction:column;gap:4px;}&quot;,&quot;#&quot;+r+&quot; label{font-size:12px;font-weight:600;color:#334;margin:0;}&quot;,&quot;#&quot;+r+&quot; select{min-width:140px;height:38px;padding:4px 8px;font-size:14px;border:1px solid #ccc;border-radius:4px;background:#fff;}&quot;,&quot;#&quot;+r+&quot; .nfse-ext-btn-pesquisar{height:38px;padding:0 16px;font-size:14px;font-weight:600;border:none;border-radius:4px;background:#1a6fb5;color:#fff;cursor:pointer;}&quot;,&quot;#&quot;+r+&quot; .nfse-ext-btn-pesquisar:hover{background:#155a94;}&quot;,&quot;#&quot;+i+&quot;{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:Arial,Helvetica,sans-serif;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45);}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-dialog{position:relative;background:#fff;color:#222;border-radius:6px;box-shadow:0 8px 32px rgba(0,0,0,.25);width:min(480px,calc(100vw - 32px));padding:24px;z-index:1;}&quot;,&quot;#&quot;+i+&quot; h3{margin:0 0 12px;font-size:20px;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-status{margin:0 0 16px;font-size:14px;line-height:1.5;color:#333;min-height:3em;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;}&quot;,&quot;#&quot;+i+&quot; button{border:none;border-radius:4px;padding:10px 16px;font-size:14px;cursor:pointer;}&quot;,&quot;#&quot;+i+&quot; button:disabled{opacity:.55;cursor:not-allowed;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-btn-primary{background:#1a6fb5;color:#fff;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-btn-secondary{background:#e8e8e8;color:#333;}&quot;,&quot;#&quot;+i+&quot; .nfse-ext-close{position:absolute;top:10px;right:12px;background:transparent;border:none;font-size:22px;line-height:1;color:#666;cursor:pointer;padding:4px 8px;}&quot;].join(&quot;&quot;),(H=document.createElement(&quot;style&quot;)).id=t,H.textContent=O,document.head.appendChild(H),function(){if(!document.getElementById(r))if(document.getElementById(&quot;datainicio&quot;)&amp;&amp;document.getElementById(&quot;datafim&quot;)){for(var t=A(),n=(new Date).getFullYear(),a=[],o=n-10;o&lt;=n+1;o++)a.push(o);-1===a.indexOf(t.ano)&amp;&amp;(a.push(t.ano),a.sort(function(e,t){return e-t}));var i=document.createElement(&quot;div&quot;);i.id=r;var c=document.createElement(&quot;div&quot;);c.className=&quot;nfse-ext-filtro-group&quot;;var d=document.createElement(&quot;label&quot;);d.htmlFor=e+&quot;-mes&quot;,d.textContent=&quot;Mês&quot;;var u=document.createElement(&quot;select&quot;);u.id=e+&quot;-mes&quot;,l.forEach(function(e,n){var a=document.createElement(&quot;option&quot;);a.value=String(n+1),a.textContent=e,n+1===t.mes&amp;&amp;(a.selected=!0),u.appendChild(a)}),c.appendChild(d),c.appendChild(u);var p=document.createElement(&quot;div&quot;);p.className=&quot;nfse-ext-filtro-group&quot;;var m=document.createElement(&quot;label&quot;);m.htmlFor=e+&quot;-ano&quot;,m.textContent=&quot;Ano&quot;;var h=document.createElement(&quot;select&quot;);h.id=e+&quot;-ano&quot;,a.forEach(function(e){var n=document.createElement(&quot;option&quot;);n.value=String(e),n.textContent=String(e),e===t.ano&amp;&amp;(n.selected=!0),h.appendChild(n)}),p.appendChild(m),p.appendChild(h),u.addEventListener(&quot;change&quot;,S),h.addEventListener(&quot;change&quot;,S);var g=document.createElement(&quot;div&quot;);g.className=&quot;nfse-ext-filtro-group&quot;;var v=document.createElement(&quot;label&quot;);v.htmlFor=e+&quot;-pesquisar&quot;,v.textContent=&quot; &quot;;var b=document.createElement(&quot;button&quot;);b.type=&quot;button&quot;,b.id=e+&quot;-pesquisar&quot;,b.className=&quot;nfse-ext-btn-pesquisar&quot;,b.textContent=&quot;Pesquisar&quot;,b.addEventListener(&quot;click&quot;,function(){S();var e=(document.getElementById(&quot;pnlComandos&quot;)||document).querySelector(&quot;form.navbar-form&quot;)||document.querySelector(&quot;#pnlComandos form&quot;);e?&quot;function&quot;==typeof e.requestSubmit?e.requestSubmit():e.submit():console.warn(&quot;[nfse-resumo] Formulário de filtro não encontrado para pesquisar.&quot;)}),g.appendChild(v),g.appendChild(b),i.appendChild(c),i.appendChild(p),i.appendChild(g);var x=document.getElementById(&quot;pnlComandos&quot;),y=x&amp;&amp;x.querySelector(&quot;form.navbar-form&quot;);if(y)y.appendChild(i);else if(x)x.appendChild(i);else{var E=f();E&amp;&amp;E.parentNode.insertBefore(i,E)}}else console.warn(&quot;[nfse-resumo] Campos datainicio/datafim não encontrados; filtro mês/ano não injetado.&quot;);function S(){var e,t,n;s={ano:null,notas:null},e=parseInt(h.value,10),t=parseInt(u.value,10),n=w(e,t),L(&quot;datainicio&quot;,q(1,t,e)),L(&quot;datafim&quot;,q(n,t,e))}}(),function(e){var t=e.querySelector(&quot;thead tr&quot;);if(t&amp;&amp;!t.querySelector(&quot;.&quot;+d)){var n=document.createElement(&quot;th&quot;);n.className=d;var a=document.createElement(&quot;input&quot;);a.type=&quot;checkbox&quot;,a.className=c+&quot;-master&quot;,a.title=&quot;Marcar / desmarcar todos&quot;,a.setAttribute(&quot;aria-label&quot;,&quot;Marcar ou desmarcar todas as notas&quot;),a.addEventListener(&quot;change&quot;,function(){var t=a.checked;e.querySelectorAll(&quot;tbody .&quot;+c).forEach(function(e){e.checked=t})}),n.appendChild(a),t.insertBefore(n,t.firstChild)}h(e).forEach(function(t){if(!t.querySelector(&quot;.&quot;+d)){var n=document.createElement(&quot;td&quot;);n.className=d;var a=document.createElement(&quot;input&quot;);a.type=&quot;checkbox&quot;,a.className=c,a.setAttribute(&quot;aria-label&quot;,&quot;Selecionar nota&quot;),a.addEventListener(&quot;change&quot;,function(){var t=e.querySelector(&quot;.&quot;+c+&quot;-master&quot;);if(t){var n=e.querySelectorAll(&quot;tbody .&quot;+c),a=e.querySelectorAll(&quot;tbody .&quot;+c+&quot;:checked&quot;);t.checked=n.length&gt;0&amp;&amp;a.length===n.length,t.indeterminate=a.length&gt;0&amp;&amp;a.length&lt;n.length}}),n.appendChild(a),t.insertBefore(n,t.firstChild)}})}(V),function(e){var t=b(e),n=x(t),a=document.createElement(&quot;div&quot;);a.id=o,a.innerHTML=&quot;Notas na listagem: &lt;strong&gt;&quot;+t.length+&quot;&lt;/strong&gt; &amp;nbsp;|&amp;nbsp; Somatório: &lt;strong&gt;R$ &quot;+p(n)+&quot;&lt;/strong&gt;&quot;,e.parentNode.insertBefore(a,e)}(V),function(e){if(!document.getElementById(n)){var t=document.createElement(&quot;a&quot;);t.id=n,t.href=&quot;javascript:void(0);&quot;,t.className=&quot;btn btn-lg btn-success&quot;,t.innerHTML=&quot;&lt;span&gt;Exportar CSV&lt;/span&gt;&quot;,t.addEventListener(&quot;click&quot;,function(t){t.preventDefault();var n=new Date,a=&quot;nfse-emitidas-&quot;+n.getFullYear()+&quot;-&quot;+C(n.getMonth()+1)+&quot;-&quot;+C(n.getDate())+&quot;.csv&quot;;E(b(e),a)}),U(t)}}(V),function(){if(!document.getElementById(a)){var e=document.createElement(&quot;a&quot;);e.id=a,e.href=&quot;javascript:void(0);&quot;,e.className=&quot;btn btn-lg btn-warning&quot;,e.innerHTML=&quot;&lt;span&gt;Exportar ano selecionado&lt;/span&gt;&quot;,e.addEventListener(&quot;click&quot;,function(e){e.preventDefault(),P()}),U(e)}}(),console.info(&#x27;[nfse-resumo] Pronto. Use &quot;Exportar ano selecionado&quot; para CSV/PDF do ano.&#x27;)):console.error(&quot;[nfse-resumo] Tabela de notas não encontrada. Execute na página de NFS-e Emitidas.&quot;)}()</textarea>
+      <div class="card warn">
+        <p style="margin:0">
+          Se o favorito não funcionar, use a Opção A (Console) ou a Opção C (Tampermonkey).
+          Alguns navegadores cortam textos muito longos nos favoritos.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Opção C — Automático no dia a dia (Tampermonkey)</h2>
+      <p>
+        Ideal se alguém puder instalar uma vez no computador.
+        Depois, o recurso abre <strong>sozinho</strong> sempre que você entrar em NFS-e Emitidas.
+      </p>
+      <ol>
+        <li>Instale a extensão <strong>Tampermonkey</strong> no Chrome, Edge ou Firefox.</li>
+        <li>No Tampermonkey, escolha <strong>Criar novo script</strong>.</li>
+        <li>Apague o texto de exemplo.</li>
+        <li>Cole primeiro este cabeçalho:</li>
+      </ol>
+      <pre class="code" style="max-height:12rem">// ==UserScript==
+// @name         NFS-e Resumo
+// @match        https://www.nfse.gov.br/EmissorNacional/Notas/Emitidas*
+// @match        https://www.nfse.gov.br/emissornacional/Notas/Emitidas*
+// @grant        none
+// @run-at       document-idle
+// ==/UserScript==
+</pre>
+      <ol start="5">
+        <li>Em seguida, clique em <strong>Copiar script</strong> abaixo e cole logo depois do cabeçalho.</li>
+        <li>Salve (<code class="inline">Ctrl+S</code>).</li>
+        <li>Volte à página de NFS-e Emitidas e atualize a página.</li>
+      </ol>
+      <div class="toolbar">
+        <button type="button" class="copy" data-copy="script-source">Copiar script</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Como usar depois de ativar</h2>
+      <h3>Ver o total do que está na tela</h3>
+      <p>Assim que o recurso ativar, aparece um quadro com a quantidade de notas e a soma em reais.</p>
+
+      <h3>Buscar um mês</h3>
+      <ol>
+        <li>Escolha o <strong>Mês</strong> e o <strong>Ano</strong>.</li>
+        <li>Clique em <strong>Pesquisar</strong>.</li>
+        <li>Espere a página recarregar com as notas daquele mês.</li>
+      </ol>
+
+      <h3>Baixar a lista da tela</h3>
+      <p>Clique em <strong>Exportar CSV</strong>. O arquivo baixa no computador e pode ser aberto no Excel ou no Google Planilhas.</p>
+
+      <h3>Baixar o ano inteiro</h3>
+      <ol>
+        <li>Escolha o <strong>Ano</strong>.</li>
+        <li>Clique em <strong>Exportar ano selecionado</strong>.</li>
+        <li>Clique em <strong>Buscar ano</strong> e aguarde (1 a 2 minutos).</li>
+        <li>Depois escolha <strong>Exportar CSV</strong> ou <strong>Exportar PDF</strong>.</li>
+        <li>No PDF, na janela de impressão, selecione <strong>Salvar como PDF</strong>.</li>
+      </ol>
+    </section>
+
+    <footer>
+      <p>
+        <strong>NFS-e Resumo</strong> — gratuito e código aberto (MIT) ·
+        <a href="https://github.com/filipechgs/nfse-e_resumo" rel="noopener">GitHub</a>
+      </p>
+      <p>
+        Ferramenta independente, sem vínculo com SERPRO ou Receita Federal ·
+        arquivos: <code class="inline">nfse-resumo.js</code> e <code class="inline">nfse-resumo.bookmarklet.js</code>
+      </p>
+    </footer>
+  </div>
+  <script>
+    document.querySelectorAll("button.copy").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var id = btn.getAttribute("data-copy");
+        var el = document.getElementById(id);
+        var text = el.tagName === "TEXTAREA" ? el.value : el.textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          var old = btn.textContent;
+          btn.textContent = "Copiado!";
+          setTimeout(function () { btn.textContent = old; }, 1600);
+        } catch (e) {
+          alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
